@@ -16,7 +16,7 @@ import MenuBookIcon from '@mui/icons-material/MenuBook';
 import CancelIcon from '@mui/icons-material/Cancel';
 import LogoutIcon from '@mui/icons-material/Logout';
 
-const role = "canteen";
+const role = "student";
 export const mainListItems = (
     <>
         {
@@ -29,6 +29,17 @@ export const mainListItems = (
                     <ListButton icon={<CategoryIcon/>} title="Add Categories" link={`/dashboard/canteen/add-category`}/>
                     <Divider />
                     <ListButton icon={<LogoutIcon/>} title="Logout" link={`/dashboard/canteen/add-category`}/>
+                </>
+            )
+        }
+        {
+            role ===  "student" && (
+                <>
+                    <ListButton icon={<DashboardIcon/>} title="Dashboard" link={`/dashboard/student`}/>
+                    <ListButton icon={<ListAltIcon/>} title="Total Order" link={`/dashboard/student/total-order`}/>
+                    <ListButton icon={<CancelIcon/>} title="Canceled Order" link={`/dashboard/student/cancelled-order`}/>
+                    <ListButton icon={<MenuBookIcon/>} title="Menu" link={`/dashboard/student/menu`}/><Divider />
+                    <ListButton icon={<LogoutIcon/>} title="Logout" link={`/dashboard/student/add-category`}/>
                 </>
             )
         }

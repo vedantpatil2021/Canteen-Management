@@ -6,9 +6,10 @@ import LoginStudent from "./pages/auth/LoginStudent"
 import Register from "./pages/auth/Register";
 import AdditionalRoutes from "./AdditionalRoutes";
 import LandingPage from "./pages/components/LandingPage";
+ 
 
 function App() {
-  const isloggedIn = false;
+  const isloggedIn = true;
   return (
     <>
       {!isloggedIn && (
