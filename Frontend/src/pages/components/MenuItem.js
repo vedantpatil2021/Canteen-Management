@@ -3,6 +3,7 @@ import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 import Table from "@mui/material/Table";
+import CircularProgress from "@mui/material/CircularProgress";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
@@ -37,12 +38,13 @@ const initialState = {
 };
 export default function Course() {
   const [namee, setName] = useState("");
+  const [loading, setLoading] = useState(null);
   const [categoryy, setCategory] = useState("");
   const [pricee, setPrice] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [cat, setCat] = useState([]);
   const [data, setData] = useState(initialState);
-  const { name, price, category } = data;
+  // const { name, price, category } = data;
   const [file, setFile] = useState("");
   const getData = async () => {
     try {
@@ -88,6 +90,7 @@ export default function Course() {
               console.log("Upload is running");
               break;
           }
+          setLoading(true);
         },
         (error) => {
           // A full list of error codes is available at
@@ -115,6 +118,7 @@ export default function Course() {
           });
         }
       );
+      setLoading(false);
     };
 
     file && uploadFile();
@@ -313,14 +317,15 @@ export default function Course() {
             </FormControl>
             <FormControl sx={{ marginTop: "1rem" }} fullWidth size="small">
               <FormLabel>Category</FormLabel>
-              <Select 
-              onChange={(e)=>setCategory(e.target.value)}
-              id="demo-select-small">
+              <Select
+                onChange={(e) => setCategory(e.target.value)}
+                id="demo-select-small"
+              >
                 {cat.map((item) => {
                   return (
                     <MenuItem
-                      value={item[Object.keys(item)] + ""}
-                      key={Object.keys(item)[0]}
+                      value={item.category + ""}
+                      // key={Object.keys(item)[0]}
                     >
                       {item.category}
                     </MenuItem>
@@ -357,7 +362,8 @@ export default function Course() {
             </FormControl> */}
             <br></br>
             <FormControl component="form" sx={{ marginTop: "1rem" }}>
-              <FormLabel>Add Image</FormLabel>
+            <FormLabel>Add Image</FormLabel>
+            <Box sx={{ display: "flex" }}>
               <TextField
                 autoFocus
                 type="file"
@@ -366,6 +372,9 @@ export default function Course() {
                 fullWidth
                 size="small"
               />
+                &nbsp;&nbsp;
+                {loading ? <CircularProgress /> : ""}
+              </Box>
             </FormControl>
           </DialogContent>
           <DialogActions>
