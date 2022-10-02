@@ -16,7 +16,6 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import IconButton from "@mui/material/IconButton";
-import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Typography } from "@mui/material";
 // import { useNavigate } from "react-router-dom";
@@ -75,9 +74,7 @@ export default function Course() {
 
   useEffect(() => {
     getData();
-    console.log("hi")
   }, [showAddModal])
-  
 
   return (
     <>
@@ -135,10 +132,7 @@ export default function Course() {
                   <TableCell align="left">{item.category}</TableCell>
                   <TableCell align="left">
                     <IconButton>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton>
-                      <DeleteIcon fontSize="small" />
+                      <DeleteIcon fontSize="small"/>
                     </IconButton>
                   </TableCell>
                 </TableRow>

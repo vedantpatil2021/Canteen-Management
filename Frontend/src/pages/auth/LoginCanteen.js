@@ -12,7 +12,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 
 function Copyright(props) {
   return (
@@ -30,7 +30,7 @@ function Copyright(props) {
 const theme = createTheme();
 
 export default function SignIn(props) {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const handleSubmit = async (event) => {
     // event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -60,7 +60,8 @@ export default function SignIn(props) {
       if (dataa === "200") {
         alert("Succesfully logged in");
         props.loginHandle(true);
-        navigate("/dashboard/canteen");
+        props.CANrole("canteen");
+        // navigate("/dashboard");
       }
     }catch (err) {
       console.log(err);

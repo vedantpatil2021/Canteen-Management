@@ -2,50 +2,56 @@ import { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
-import Table from "@mui/material/Table";
 import CircularProgress from "@mui/material/CircularProgress";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
 import TextField from "@mui/material/TextField";
 import Dialog from "@mui/material/Dialog";
+import InputLabel from '@mui/material/InputLabel';
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
-import IconButton from "@mui/material/IconButton";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import { Typography } from "@mui/material";
 import FormControl from "@mui/material/FormControl";
 import FormLabel from "@mui/material/FormLabel";
-// import Radio from '@mui/material/Radio';
-// import RadioGroup from '@mui/material/RadioGroup';
-// import FormControlLabel from '@mui/material/FormControlLabel';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
-
-// import { useNavigate, useParams } from "react-router-dom";
 import { db, storage } from "../firebase/firebase";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { addDoc, collection, serverTimestamp,onSnapshot} from "firebase/firestore";
+import SingleITEM from "./SingleITEM";
 const initialState = {
   name: "",
   price: "",
   category: "",
+  type: "",
 };
 export default function Course() {
+  const [itm, setItm] = useState([]);
+  const [radioval, setRadioVal] = useState('')
   const [namee, setName] = useState("");
-  const [loading, setLoading] = useState(null);
+  const [onfilter, setOFFfilter] = useState(false);
+  const [loading, setLoading] = useState("");
   const [categoryy, setCategory] = useState("");
   const [pricee, setPrice] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [cat, setCat] = useState([]);
   const [data, setData] = useState(initialState);
-  // const { name, price, category } = data;
   const [file, setFile] = useState("");
+  const [newList, setNewList] = useState([]);
+
+  const handleFilter = (e) =>{
+    if(e.target.value==="All"){
+      return setOFFfilter(false)
+    }
+    const updated = itm.filter((element)=>{
+      return element.category === e.target.value;
+    })
+    setNewList(updated);
+    setOFFfilter(true);
+  }
+
   const getData = async () => {
     try {
       const res = await fetch("/getcategories", {
@@ -62,6 +68,18 @@ export default function Course() {
       console.log(err);
     }
   };
+
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, "items"), (snapshot) => {
+      // setUsers(snapshot.docs.map((doc) => doc.data())); //best method
+      let list = [];
+      snapshot.docs.forEach((doc) => {
+        list.push({ id: doc.id, ...doc.data() });
+      });
+      setItm(list);
+    });
+    return unsub;
+  }, []);
 
   useEffect(() => {
     getData();
@@ -89,27 +107,13 @@ export default function Course() {
             case "running":
               console.log("Upload is running");
               break;
+            default :
+              break;
           }
-          setLoading(true);
         },
         (error) => {
-          // A full list of error codes is available at
-          // https://firebase.google.com/docs/storage/web/handle-errors
-          switch (error.code) {
-            case "storage/unauthorized":
-              // User doesn't have permission to access the object
-              break;
-            case "storage/canceled":
-              // User canceled the upload
-              break;
-
-            // ...
-
-            case "storage/unknown":
-              // Unknown error occurred, inspect error.serverResponse
-              break;
-          }
-        },
+          console.log("Error in uploading",error)
+          },
         () => {
           // Upload completed successfully, now we can get the download URL
           getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
@@ -124,22 +128,19 @@ export default function Course() {
     file && uploadFile();
   }, [file]);
 
-  // const handleChange = (e) => {
-  //   const datta = new FormData()
-  //   setData({ ...data, [e.target.name]: e.target.value });
-  // };
-
   const handleSubmit = async () => {
     console.log("hey");
     data.name = namee;
     data.price = pricee;
     data.category = categoryy;
+    data.type = radioval;
     setData(data);
     // console.log({ ...data });
     await addDoc(collection(db, "items"), {
       ...data,
       timestamp: serverTimestamp(),
     });
+    setShowAddModal(false);
   };
 
   return (
@@ -166,126 +167,34 @@ export default function Course() {
             </Button>
           </Grid>
         </Grid>
-
-        <Typography sx={{ marginTop: "3rem" }} variant="h5">
-          Snacks
-        </Typography>
-        <TableContainer component={Paper} style={{ marginTop: "1rem" }}>
-          <Table sx={{ minWidth: 650 }} aria-label="simple table">
-            <TableHead>
-              <TableRow>
-                <TableCell>
-                  <Typography variant="h6">Sr. No.</Typography>
-                </TableCell>
-                <TableCell align="left">
-                  <Typography variant="h6">Item</Typography>
-                </TableCell>
-                <TableCell align="left" style={{ paddingLeft: 25 }}>
-                  <Typography variant="h6">Action</Typography>
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              <TableRow
-                sx={{
-                  "&:last-child td, &:last-child th": { border: 0 },
-                  padding: 8,
-                }}
+        <FormControl  sx={{ marginTop: "1rem" }} fullWidth size="medium">
+        <InputLabel id="demo-simple-select-label">Select Category</InputLabel>
+        <Select
+                // onChange={(e) => setCategory(e.target.value)}
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                label="Select Category"
+                onChange={handleFilter}
               >
-                <TableCell component="th" scope="row"></TableCell>
-                <TableCell align="left"></TableCell>
-                <TableCell align="left">
-                  <IconButton>
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                  <IconButton>
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </TableContainer>
-
-        <Typography sx={{ marginTop: "3rem" }} variant="h5">
-          Rolls
-        </Typography>
-        <TableContainer component={Paper} style={{ marginTop: "1rem" }}>
-          <Table sx={{ minWidth: 650 }} aria-label="simple table">
-            <TableHead>
-              <TableRow>
-                <TableCell>
-                  <Typography variant="h6">Sr. No.</Typography>
-                </TableCell>
-                <TableCell align="left">
-                  <Typography variant="h6">Item</Typography>
-                </TableCell>
-                <TableCell align="left" style={{ paddingLeft: 25 }}>
-                  <Typography variant="h6">Action</Typography>
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              <TableRow
-                sx={{
-                  "&:last-child td, &:last-child th": { border: 0 },
-                  padding: 8,
-                }}
-              >
-                <TableCell component="th" scope="row"></TableCell>
-                <TableCell align="left"></TableCell>
-                <TableCell align="left">
-                  <IconButton>
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                  <IconButton>
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </TableContainer>
-
-        <Typography sx={{ marginTop: "3rem" }} variant="h5">
-          Chinese
-        </Typography>
-        <TableContainer component={Paper} style={{ marginTop: "1rem" }}>
-          <Table sx={{ minWidth: 650 }} aria-label="simple table">
-            <TableHead>
-              <TableRow>
-                <TableCell>
-                  <Typography variant="h6">Sr. No.</Typography>
-                </TableCell>
-                <TableCell align="left">
-                  <Typography variant="h6">Item</Typography>
-                </TableCell>
-                <TableCell align="left" style={{ paddingLeft: 25 }}>
-                  <Typography variant="h6">Action</Typography>
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              <TableRow
-                sx={{
-                  "&:last-child td, &:last-child th": { border: 0 },
-                  padding: 8,
-                }}
-              >
-                <TableCell component="th" scope="row"></TableCell>
-                <TableCell align="left"></TableCell>
-                <TableCell align="left">
-                  <IconButton>
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                  <IconButton>
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </TableContainer>
+                <MenuItem value="All">All</MenuItem>
+                {cat.map((item) => {
+                  return (
+                    <MenuItem         
+                      // value={item.category + ""}
+                      value={item.category + ""}
+                      key={item.category + ""}
+                      // key={Object.keys(item)[0]}
+                    >
+                      {item.category}
+                    </MenuItem>
+                  );
+                })}
+        </Select>
+        </FormControl>
+                
+        {/* for display main list */}
+        
+        {onfilter ? <SingleITEM itm={newList}></SingleITEM> : <SingleITEM itm={itm}></SingleITEM> }
 
         {/* Model */}
         <Dialog
@@ -325,7 +234,7 @@ export default function Course() {
                   return (
                     <MenuItem
                       value={item.category + ""}
-                      // key={Object.keys(item)[0]}
+                      key={item.category + ""}
                     >
                       {item.category}
                     </MenuItem>
@@ -349,17 +258,21 @@ export default function Course() {
               />
             </FormControl>
             <br></br>
-            {/* <FormControl sx={{ marginTop: '1rem' }}>
+            <FormControl sx={{ marginTop: '1rem' }}>
               <FormLabel>Type</FormLabel>
               <RadioGroup
+                value={radioval}
                 row
+                onChange={(e)=>{
+                  setRadioVal(e.target.value)
+                }}
                 aria-labelledby="demo-row-radio-buttons-group-label"
                 name="row-radio-buttons-group"
               >
-                <FormControlLabel value="female" name="radio" control={<Radio />} label="Veg" />
-                <FormControlLabel value="male" name="radio" control={<Radio />} label="Non-Veg" />
+                <FormControlLabel value="Veg" name="radio" control={<Radio />} label="Veg" />
+                <FormControlLabel value="Non-veg" name="radio" control={<Radio />} label="Non-Veg" />
               </RadioGroup>
-            </FormControl> */}
+            </FormControl>
             <br></br>
             <FormControl component="form" sx={{ marginTop: "1rem" }}>
             <FormLabel>Add Image</FormLabel>
@@ -373,7 +286,7 @@ export default function Course() {
                 size="small"
               />
                 &nbsp;&nbsp;
-                {loading ? <CircularProgress /> : ""}
+                {loading ? <CircularProgress variant="determinate" value={loading}/> : ""}
               </Box>
             </FormControl>
           </DialogContent>
