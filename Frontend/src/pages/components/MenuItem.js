@@ -5,52 +5,68 @@ import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import TextField from "@mui/material/TextField";
 import Dialog from "@mui/material/Dialog";
-import InputLabel from '@mui/material/InputLabel';
+import InputLabel from "@mui/material/InputLabel";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import { Typography } from "@mui/material";
 import FormControl from "@mui/material/FormControl";
 import FormLabel from "@mui/material/FormLabel";
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
+import Radio from "@mui/material/Radio";
+import RadioGroup from "@mui/material/RadioGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
 import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import { db, storage } from "../firebase/firebase";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { addDoc, collection, serverTimestamp,onSnapshot} from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  serverTimestamp,
+  onSnapshot,
+  updateDoc,
+  doc,
+} from "firebase/firestore";
 import SingleITEM from "./SingleITEM";
+import ImageViewer from "react-simple-image-viewer";
+
 const initialState = {
   name: "",
   price: "",
   category: "",
   type: "",
 };
+
 export default function Course() {
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [itm, setItm] = useState([]);
-  const [radioval, setRadioVal] = useState('')
+  const [radioval, setRadioVal] = useState("");
   const [namee, setName] = useState("");
   const [onfilter, setOFFfilter] = useState(false);
-  const [loading, setLoading] = useState("");
+  const [loading, setLoading] = useState(false);
   const [categoryy, setCategory] = useState("");
   const [pricee, setPrice] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [cat, setCat] = useState([]);
   const [data, setData] = useState(initialState);
   const [file, setFile] = useState("");
   const [newList, setNewList] = useState([]);
 
-  const handleFilter = (e) =>{
-    if(e.target.value==="All"){
+  const showUpdate =(dataa) =>{
+    setShowUpdateModal(true);
+    console.log(dataa)
+    setData(dataa);
+  }
+
+  const handleFilter = (event) => {
+    if(event.target.value==="All"){
       return setOFFfilter(false)
     }
-    const updated = itm.filter((element)=>{
-      return element.category === e.target.value;
-    })
+    const updated = itm.filter(element=>element.category===event.target.value);
     setNewList(updated);
     setOFFfilter(true);
-  }
+  };
 
   const getData = async () => {
     try {
@@ -87,11 +103,10 @@ export default function Course() {
 
   useEffect(() => {
     const uploadFile = () => {
-      // const name = new Date().getTime() + file.name;
+      const imgname = new Date().getTime() + file.name;
       // Upload file and metadata to the object 'images/mountains.jpg'
-      const storageRef = ref(storage, "images/" + file.name);
+      const storageRef = ref(storage, "images/" + file.name + imgname);
       const uploadTask = uploadBytesResumable(storageRef, file);
-
       // Listen for state changes, errors, and completion of the upload.
       uploadTask.on(
         "state_changed",
@@ -100,6 +115,7 @@ export default function Course() {
           const progress =
             (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
           console.log("Upload is " + progress + "% done");
+          setLoading(true);
           switch (snapshot.state) {
             case "paused":
               console.log("Upload is paused");
@@ -107,40 +123,66 @@ export default function Course() {
             case "running":
               console.log("Upload is running");
               break;
-            default :
+            default:
               break;
           }
         },
         (error) => {
-          console.log("Error in uploading",error)
-          },
+          console.log("Error in uploading", error);
+        },
         () => {
           // Upload completed successfully, now we can get the download URL
           getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
             setData((prev) => ({ ...prev, image: downloadURL }));
             console.log("File available at", downloadURL);
+            setLoading(false);
           });
         }
       );
-      setLoading(false);
     };
 
     file && uploadFile();
   }, [file]);
 
   const handleSubmit = async () => {
-    console.log("hey");
-    data.name = namee;
-    data.price = pricee;
-    data.category = categoryy;
-    data.type = radioval;
-    setData(data);
-    // console.log({ ...data });
-    await addDoc(collection(db, "items"), {
-      ...data,
-      timestamp: serverTimestamp(),
-    });
-    setShowAddModal(false);
+    if(showAddModal){
+      data.name = namee;
+      data.price = pricee;
+      data.category = categoryy;
+      data.type = radioval;
+      if (!namee || !pricee || !categoryy || !radioval) {
+        return alert("Enter all fields");
+      }
+      setData(data);
+      await addDoc(collection(db, "items"), {
+        ...data,
+        timestamp: serverTimestamp(),
+      });
+      setShowAddModal(false);
+    } 
+    if(showUpdateModal){
+      if(namee){data.name = namee;}
+      if(pricee){data.price = pricee;}
+      if(categoryy){data.category = categoryy;}
+      if(radioval){data.type = radioval;}
+      await updateDoc(doc(db, "items", data.id), {
+        ...data,
+        timestamp: serverTimestamp(),
+      });
+      setName("");
+      setPrice("");
+      setCategory("");
+      setRadioVal("");
+      setShowUpdateModal(false);
+    }
+  };
+
+  const openImageViewer = () => {
+    setIsViewerOpen(true);
+  };
+
+  const closeImageViewer = () => {
+    setIsViewerOpen(false);
   };
 
   return (
@@ -167,47 +209,52 @@ export default function Course() {
             </Button>
           </Grid>
         </Grid>
-        <FormControl  sx={{ marginTop: "1rem" }} fullWidth size="medium">
-        <InputLabel id="demo-simple-select-label">Select Category</InputLabel>
-        <Select
-                // onChange={(e) => setCategory(e.target.value)}
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
-                label="Select Category"
-                onChange={handleFilter}
-              >
-                <MenuItem value="All">All</MenuItem>
-                {cat.map((item) => {
-                  return (
-                    <MenuItem         
-                      // value={item.category + ""}
-                      value={item.category + ""}
-                      key={item.category + ""}
-                      // key={Object.keys(item)[0]}
-                    >
-                      {item.category}
-                    </MenuItem>
-                  );
-                })}
-        </Select>
+        <FormControl sx={{ marginTop: "1rem" }} fullWidth size="medium">
+          <InputLabel id="demo-simple-select-label">Select Category</InputLabel>
+          <Select
+            // onChange={(e) => setCategory(e.target.value)}
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            label="Select Category"
+            onChange={handleFilter}
+          >
+            <MenuItem value="All">All</MenuItem>
+            {cat.map((item) => {
+              return (
+                <MenuItem
+                  // value={item.category + ""}
+                  value={item.category + "  "}
+                  key={item.category + ""}
+                  // key={Object.keys(item)[0]}
+                >
+                  {item.category}
+                </MenuItem>
+              );
+            })}
+          </Select>
         </FormControl>
-                
+
         {/* for display main list */}
-        
-        {onfilter ? <SingleITEM itm={newList}></SingleITEM> : <SingleITEM itm={itm}></SingleITEM> }
+
+        {onfilter ? (
+          <SingleITEM itm={newList} update={showUpdate}></SingleITEM>
+        ) : (
+          <SingleITEM itm={itm} update={showUpdate}></SingleITEM>
+        )}
 
         {/* Model */}
         <Dialog
-          open={showAddModal}
+          open={showAddModal || showUpdateModal}
           sx={{ p: 5 }}
           onClose={() => {
             setShowAddModal(false);
+            setShowUpdateModal(false);
           }}
           fullWidth={true}
           style={{ padding: "50px" }}
           maxWidth="sm"
         >
-          <DialogTitle variant="h4">Add Item</DialogTitle>
+          {showUpdateModal ? <DialogTitle variant="h4">Update Item</DialogTitle> : <DialogTitle variant="h4">Add Item</DialogTitle>}  
           <DialogContent style={{ padding: "10px" }}>
             <FormControl component="form">
               <FormLabel sx={{ marginTop: "1rem" }}>Food Name</FormLabel>
@@ -215,9 +262,9 @@ export default function Course() {
                 autoFocus
                 sx={{ marginTop: "0.5rem" }}
                 name="name"
-                // value={name}
+                defaultValue={data.name}
                 onChange={(e) => setName(e.target.value)}
-                label="Food Name"
+                // label="Food Name"
                 type="text"
                 fullWidth
                 variant="outlined"
@@ -227,6 +274,7 @@ export default function Course() {
             <FormControl sx={{ marginTop: "1rem" }} fullWidth size="small">
               <FormLabel>Category</FormLabel>
               <Select
+                defaultValue={data.category}
                 onChange={(e) => setCategory(e.target.value)}
                 id="demo-select-small"
               >
@@ -248,7 +296,7 @@ export default function Course() {
               <TextField
                 autoFocus
                 fullWidth
-                // value={price}
+                defaultValue={data.price}
                 name="price"
                 onChange={(e) => setPrice(e.target.value)}
                 sx={{ width: "100%" }}
@@ -258,35 +306,59 @@ export default function Course() {
               />
             </FormControl>
             <br></br>
-            <FormControl sx={{ marginTop: '1rem' }}>
+            <FormControl sx={{ marginTop: "1rem" }}>
               <FormLabel>Type</FormLabel>
               <RadioGroup
-                value={radioval}
+                defaultValue={data.type}
                 row
-                onChange={(e)=>{
-                  setRadioVal(e.target.value)
+                onChange={(e) => {
+                  setRadioVal(e.target.value);
                 }}
                 aria-labelledby="demo-row-radio-buttons-group-label"
                 name="row-radio-buttons-group"
               >
-                <FormControlLabel value="Veg" name="radio" control={<Radio />} label="Veg" />
-                <FormControlLabel value="Non-veg" name="radio" control={<Radio />} label="Non-Veg" />
+                <FormControlLabel
+                  value="Veg"
+                  name="radio"
+                  control={<Radio />}
+                  label="Veg"
+                />
+                <FormControlLabel
+                  value="Non-veg"
+                  name="radio"
+                  control={<Radio />}
+                  label="Non-Veg"
+                />
               </RadioGroup>
             </FormControl>
             <br></br>
             <FormControl component="form" sx={{ marginTop: "1rem" }}>
-            <FormLabel>Add Image</FormLabel>
-            <Box sx={{ display: "flex" }}>
-              <TextField
-                autoFocus
-                type="file"
-                onChange={(e) => setFile(e.target.files[0])}
-                placeholder="Add Image"
-                fullWidth
-                size="small"
-              />
+              <FormLabel>Add Image</FormLabel>
+              <Box sx={{ display: "flex" }}>
+                <TextField
+                  autoFocus
+                  type="file"
+                  onChange={(e) => setFile(e.target.files[0])}
+                  placeholder="Add Image"
+                  fullWidth
+                  size="small"
+                />
                 &nbsp;&nbsp;
-                {loading ? <CircularProgress variant="determinate" value={loading}/> : ""}
+                {loading ? <CircularProgress /> : ""}
+                {data.image && (
+                  <Button onClick={() => openImageViewer()}>Preview</Button>
+                )}
+                {isViewerOpen && (
+                  <ImageViewer
+                    src={[data.image]}
+                    onClose={closeImageViewer}
+                    disableScroll={false}
+                    backgroundStyle={{
+                      backgroundColor: "rgba(0,0,0,0.9)",
+                    }}
+                    closeOnClickOutside={true}
+                  />
+                )}
               </Box>
             </FormControl>
           </DialogContent>
@@ -294,13 +366,17 @@ export default function Course() {
             <Button
               onClick={() => {
                 setShowAddModal(false);
+                setShowUpdateModal(false);
               }}
             >
               Cancel
             </Button>
-            <Button type="submit" onClick={handleSubmit}>
-              Add
-            </Button>
+            {showUpdateModal ? <Button type="submit" disabled={loading} onClick={handleSubmit}>
+              Update
+            </Button> :
+            <Button type="submit" disabled={loading} onClick={handleSubmit}>
+            Add
+          </Button>}
           </DialogActions>
         </Dialog>
       </Box>

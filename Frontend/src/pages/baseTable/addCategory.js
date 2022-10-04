@@ -13,21 +13,18 @@ import TextField from "@mui/material/TextField";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Typography } from "@mui/material";
-// import { useNavigate } from "react-router-dom";
 
 var role = "canteen";
 
 export default function Course() {
-  // const navigate = useNavigate();
   const [cat, setCat] = useState([]);
   const [country, setCountry] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
+  const [del, setDel] = useState(false);
 
   const handleCat = async () => {
     try {
@@ -47,7 +44,8 @@ export default function Course() {
         return alert("Wrong");
       }
       if (dataa === "200") {
-        alert("SUccess");
+        alert("Success");
+        setCountry('');
         setShowAddModal(false);
       }
     } catch (err) {
@@ -74,7 +72,7 @@ export default function Course() {
 
   useEffect(() => {
     getData();
-  }, [showAddModal])
+  }, [showAddModal,del])
 
   return (
     <>
@@ -132,7 +130,28 @@ export default function Course() {
                   <TableCell align="left">{item.category}</TableCell>
                   <TableCell align="left">
                     <IconButton>
-                      <DeleteIcon fontSize="small"/>
+                      <DeleteIcon fontSize="small" onClick={async()=>{
+                        setDel(!del);
+                        try {
+                          const res = await fetch("/deletecategorie", {
+                            method: "POST",
+                            headers: {
+                              "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                              category: item.category,
+                            }),
+                          });
+                    
+                          const dataa = await res.json();
+                    
+                          if (dataa === "404") {
+                            return alert("Wrong");
+                          }
+                        } catch (err) {
+                          alert(err);
+                        }
+                      }}/>
                     </IconButton>
                   </TableCell>
                 </TableRow>
@@ -181,41 +200,6 @@ export default function Course() {
             <Button onClick={handleCat} disabled={!country}>
               Add
             </Button>
-          </DialogActions>
-        </Dialog>
-
-        <Dialog
-          open={showEditModal}
-          onClose={() => {
-            setShowEditModal(false);
-            setCountry("");
-          }}
-          fullWidth={true}
-          maxWidth="xs"
-        >
-          <DialogTitle style={{ paddingBottom: 0 }}>Edit Religion</DialogTitle>
-          <DialogContentText></DialogContentText>
-          <DialogContent>
-            <TextField
-              autoFocus
-              label="Religion"
-              type="text"
-              value={country}
-              onChange={(e) => setCountry(e.target.value)}
-              fullWidth
-              variant="outlined"
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={() => {
-                setShowEditModal(false);
-                setCountry("");
-              }}
-            >
-              Cancel
-            </Button>
-            <Button disabled={!country}>Save</Button>
           </DialogActions>
         </Dialog>
       </Box>

@@ -11,7 +11,7 @@ import ButtonGroup from '@mui/material/ButtonGroup';
 import { useCart } from "react-use-cart";
 
 export default function Course() {
-    const {isEmpty,totalUniqueItems,items,totalItems,cartTotal,updateItemQuantity,removeItem,emptyCart, } = useCart();
+    const {isEmpty,totalUniqueItems,items,totalItems,cartTotal,updateItemQuantity,removeItem,emptyCart} = useCart();
     if (isEmpty) return <h1 className=" text-center "> Your Cart is Empty </h1>;
     return (
         <>

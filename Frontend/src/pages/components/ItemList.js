@@ -35,7 +35,7 @@ const ItemList = (props) => {
                 {props.itm.map((item,index)=>{
                     return(
                         <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 }, padding: 8 }}>
-                <TableCell component="th" scope="row">{index}</TableCell>
+                <TableCell component="th" scope="row">{index+1}</TableCell>
                 <TableCell align="left"><img src={item.image} alt="Sorry pic not availble" width="50px" height="50px"/></TableCell>
                 <TableCell align="left">{item.name}</TableCell>
                 <TableCell align="left">{item.price}</TableCell>

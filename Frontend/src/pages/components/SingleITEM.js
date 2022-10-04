@@ -44,6 +44,7 @@ const SingleITEM = (props) => {
               </TableRow>
             </TableHead>
             <TableBody>
+            {/* {props.itm===false && <TableRow>"bello"</TableRow>} */}
             {props.itm.length===0 && <TableRow>EMPTY</TableRow>}
             {props.itm.map((item,index)=>{
                 return(
@@ -61,7 +62,7 @@ const SingleITEM = (props) => {
                 <TableCell align="left">{item.category}</TableCell>
                 <TableCell align="left">
                   <IconButton>
-                    <EditIcon fontSize="small" />
+                    <EditIcon fontSize="small" onClick={()=>props.update(item)} />
                   </IconButton>
                   <IconButton>
                     <DeleteIcon fontSize="small" onClick={async()=>{
