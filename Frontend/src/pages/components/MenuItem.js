@@ -16,6 +16,7 @@ import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import MenuItem from "@mui/material/MenuItem";
+import "./MenuItem.css";
 import Select from "@mui/material/Select";
 import { db, storage } from "../firebase/firebase";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
@@ -52,18 +53,21 @@ export default function Course() {
   const [data, setData] = useState(initialState);
   const [file, setFile] = useState("");
   const [newList, setNewList] = useState([]);
+  const [initialLOAD, setinitialLOAD] = useState(false);
 
-  const showUpdate =(dataa) =>{
+  const showUpdate = (dataa) => {
     setShowUpdateModal(true);
-    console.log(dataa)
+    console.log(dataa);
     setData(dataa);
-  }
+  };
 
-  const handleFilter = (event) => {
-    if(event.target.value==="All"){
-      return setOFFfilter(false)
+  const handleFilter = (e) => {
+    if (e.target.value === "All") {
+      return setOFFfilter(false);
     }
-    const updated = itm.filter(element=>element.category===event.target.value);
+    const updated = itm.filter((element) => {
+      return element.category === e.target.value.trim();
+    });
     setNewList(updated);
     setOFFfilter(true);
   };
@@ -88,11 +92,13 @@ export default function Course() {
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "items"), (snapshot) => {
       // setUsers(snapshot.docs.map((doc) => doc.data())); //best method
+      setinitialLOAD(true);
       let list = [];
       snapshot.docs.forEach((doc) => {
         list.push({ id: doc.id, ...doc.data() });
       });
       setItm(list);
+      setinitialLOAD(false);
     });
     return unsub;
   }, []);
@@ -145,7 +151,7 @@ export default function Course() {
   }, [file]);
 
   const handleSubmit = async () => {
-    if(showAddModal){
+    if (showAddModal) {
       data.name = namee;
       data.price = pricee;
       data.category = categoryy;
@@ -159,12 +165,20 @@ export default function Course() {
         timestamp: serverTimestamp(),
       });
       setShowAddModal(false);
-    } 
-    if(showUpdateModal){
-      if(namee){data.name = namee;}
-      if(pricee){data.price = pricee;}
-      if(categoryy){data.category = categoryy;}
-      if(radioval){data.type = radioval;}
+    }
+    if (showUpdateModal) {
+      if (namee) {
+        data.name = namee;
+      }
+      if (pricee) {
+        data.price = pricee;
+      }
+      if (categoryy) {
+        data.category = categoryy;
+      }
+      if (radioval) {
+        data.type = radioval;
+      }
       await updateDoc(doc(db, "items", data.id), {
         ...data,
         timestamp: serverTimestamp(),
@@ -174,6 +188,7 @@ export default function Course() {
       setCategory("");
       setRadioVal("");
       setShowUpdateModal(false);
+      setData("");
     }
   };
 
@@ -237,9 +252,17 @@ export default function Course() {
         {/* for display main list */}
 
         {onfilter ? (
-          <SingleITEM itm={newList} update={showUpdate}></SingleITEM>
+          <>
+             
+            <SingleITEM itm={newList} update={showUpdate}>
+            </SingleITEM>
+          </>
         ) : (
-          <SingleITEM itm={itm} update={showUpdate}></SingleITEM>
+          <>
+            {initialLOAD ? <SingleITEM load={initialLOAD}></SingleITEM> :
+            <SingleITEM itm={itm} update={showUpdate}>
+            </SingleITEM> }
+          </>
         )}
 
         {/* Model */}
@@ -254,7 +277,11 @@ export default function Course() {
           style={{ padding: "50px" }}
           maxWidth="sm"
         >
-          {showUpdateModal ? <DialogTitle variant="h4">Update Item</DialogTitle> : <DialogTitle variant="h4">Add Item</DialogTitle>}  
+          {showUpdateModal ? (
+            <DialogTitle variant="h4">Update Item</DialogTitle>
+          ) : (
+            <DialogTitle variant="h4">Add Item</DialogTitle>
+          )}
           <DialogContent style={{ padding: "10px" }}>
             <FormControl component="form">
               <FormLabel sx={{ marginTop: "1rem" }}>Food Name</FormLabel>
@@ -371,12 +398,15 @@ export default function Course() {
             >
               Cancel
             </Button>
-            {showUpdateModal ? <Button type="submit" disabled={loading} onClick={handleSubmit}>
-              Update
-            </Button> :
-            <Button type="submit" disabled={loading} onClick={handleSubmit}>
-            Add
-          </Button>}
+            {showUpdateModal ? (
+              <Button type="submit" disabled={loading} onClick={handleSubmit}>
+                Update
+              </Button>
+            ) : (
+              <Button type="submit" disabled={loading} onClick={handleSubmit}>
+                Add
+              </Button>
+            )}
           </DialogActions>
         </Dialog>
       </Box>

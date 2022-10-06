@@ -9,6 +9,7 @@ import IconButton from "@mui/material/IconButton";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Table from "@mui/material/Table";
+import CircularProgress from '@mui/material/CircularProgress';
 import {doc, deleteDoc} from 'firebase/firestore'
 import { db } from "../firebase/firebase";
 import veg from "../images/icons8-vegetarian-food-symbol-48.png"
@@ -45,7 +46,8 @@ const SingleITEM = (props) => {
             </TableHead>
             <TableBody>
             {/* {props.itm===false && <TableRow>"bello"</TableRow>} */}
-            {props.itm.length===0 && <TableRow>EMPTY</TableRow>}
+            {props.load && <CircularProgress></CircularProgress>}
+            {props.itm.length===0 && <TableRow>Empty</TableRow>}
             {props.itm.map((item,index)=>{
                 return(
                     <TableRow

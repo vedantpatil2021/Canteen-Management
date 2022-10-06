@@ -27,7 +27,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 //     getRole()
 //   )
 // }, [])
-const role = "canteen";
+const role = "student";
 export const mainListItems = (
     
     <>

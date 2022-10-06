@@ -22,7 +22,7 @@ export default function Course() {
                         <Typography variant="h5">Total Items {totalItems}</Typography>
                     </Grid>
                     <Grid item>
-                        <Button><DeleteIcon onClick={() => emptyCart()}/>&nbsp;&nbsp;Empty Cart</Button>
+                        <Button onClick={() => emptyCart()}><DeleteIcon/>&nbsp;&nbsp;Empty Cart</Button>
                     </Grid>
                 </Grid>
             </Box>
@@ -72,7 +72,7 @@ export default function Course() {
                             )
                         })}
                         <Typography variant="h5">Total Price {cartTotal} ₹</Typography>
-                        <Button onClick={console.log(items)}></Button>
+                        <Button onClick={console.log(items)}>Show items</Button>
                     </Grid>
                 </Grid>
             </Box>
