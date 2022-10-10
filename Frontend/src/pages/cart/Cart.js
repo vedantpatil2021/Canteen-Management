@@ -11,6 +11,44 @@ import ButtonGroup from '@mui/material/ButtonGroup';
 import { useCart } from "react-use-cart";
 
 export default function Course() {
+    let totalprice = "50";
+    let order = {
+        orders : [{
+
+        }]
+    };
+
+    const addorder = async () => {
+        console.log("hi")
+        totalprice = cartTotal;
+        order.orders = items;
+        try {
+          const res = await fetch("/addOrder", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                order,
+                totalprice,
+            }),
+          });
+    
+          const dataa = await res.json();
+    
+          if (dataa === "404") {
+            return alert("Wrong");
+          }
+          if (dataa === "200") {
+            alert("Success");
+          }
+        } catch (err) {
+          alert(err);
+        }
+
+        emptyCart();
+      };
+
     const {isEmpty,totalUniqueItems,items,totalItems,cartTotal,updateItemQuantity,removeItem,emptyCart} = useCart();
     if (isEmpty) return <h1 className=" text-center "> Your Cart is Empty </h1>;
     return (
@@ -72,10 +110,11 @@ export default function Course() {
                             )
                         })}
                         <Typography variant="h5">Total Price {cartTotal} ₹</Typography>
-                        <Button onClick={console.log(items)}>Show items</Button>
+                        
                     </Grid>
                 </Grid>
             </Box>
+            <Button onClick={addorder}>Add Order</Button>  
         </>
     );
 }

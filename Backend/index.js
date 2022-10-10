@@ -2,6 +2,10 @@ const express = require('express');
 const app = express();
 const dotenv = require('dotenv');
 dotenv.config({path:'./config.env'});
+const bodyParser = require("body-parser")
+
+app.use(bodyParser.urlencoded({ extended: true }));
+
 
 require('./database/connection');
 app.use(express.json())

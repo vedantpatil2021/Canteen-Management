@@ -3,7 +3,9 @@ const bcrypt = require('bcryptjs');
 const User = require('../model/userschema');
 const Manager = require('../model/managerschema');
 const Category = require('../model/categoryschema');
+const ADDOrder = require('../model/orderschema');
 const router = express.Router();
+
 
 //------------------------------------USER SIDE--------------------------------------------//
 router.post('/userregister', async (req, res)=>{
@@ -165,6 +167,19 @@ router.post('/deletecategorie', async (req, res)=>{
         const cat = await Category.deleteOne({category:category})
         return res.status(200).json("200")
     }catch(err){
+        return res.status(404).json("404");
+    }
+})
+
+//------------------------------------ORDER SIDE--------------------------------------------//
+router.post('/addOrder',async (req, res)=>{ 
+    const {order, totalprice} = req.body;
+    const orderDate = new Date;
+    try{
+        const newOrder = ADDOrder.insertMany({order : order.orders,orderDate,totalprice})
+        return res.status(200).json("200")
+    }
+    catch(err){
         return res.status(404).json("404");
     }
 })

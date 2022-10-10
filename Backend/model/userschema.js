@@ -26,7 +26,8 @@ const userschema = new mg.Schema({
       },
     },
   ],
-});
+}
+);
 
 //this acts as the middleware
 
